@@ -5,6 +5,7 @@
 #include "ns3/internet-apps-module.h"
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-routing-table-entry.h"
+#include "ns3/netanim-module.h"
 
 using namespace ns3;
 
@@ -149,6 +150,7 @@ int main (int argc, char **argv)
   /* Now, do the actual simulation. */
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Stop (Seconds (131.0));
+  AnimationInterface anim ("animation.xml");
   Simulator::Run ();
   Simulator::Destroy ();
   NS_LOG_INFO ("Done.");
