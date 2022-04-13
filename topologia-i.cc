@@ -9,7 +9,14 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("RipSimpleRouting");
+NS_LOG_COMPONENT_DEFINE ("Topologia1");
+
+//Metodo para derrubar links
+void TearDownLink (Ptr<Node> nodeA, Ptr<Node> nodeB, uint32_t interfaceA, uint32_t interfaceB)
+{
+  nodeA->GetObject<Ipv4> ()->SetDown (interfaceA);
+  nodeB->GetObject<Ipv4> ()->SetDown (interfaceB);
+}
 
 int main (int argc, char **argv)
 {
@@ -28,7 +35,7 @@ int main (int argc, char **argv)
   if (verbose)
     {
       LogComponentEnableAll (LogLevel (LOG_PREFIX_TIME | LOG_PREFIX_NODE));
-      LogComponentEnable ("Exemplo-RIp", LOG_LEVEL_INFO);
+      LogComponentEnable ("Topologia1", LOG_LEVEL_INFO);
       LogComponentEnable ("Rip", LOG_LEVEL_ALL);
       LogComponentEnable ("Ipv4Interface", LOG_LEVEL_ALL);
       LogComponentEnable ("Icmpv4L4Protocol", LOG_LEVEL_ALL);
@@ -152,13 +159,16 @@ int main (int argc, char **argv)
   apps.Stop (Seconds (110.0));
 
   AsciiTraceHelper ascii;
-  csma.EnableAsciiAll (ascii.CreateFileStream ("exemplo-rip.tr"));
-  csma.EnablePcapAll ("exemplo-rip", true);
+  csma.EnableAsciiAll (ascii.CreateFileStream ("Topologia1.tr"));
+  csma.EnablePcapAll ("Topologia1", true);
+	
+  /* Derrubando a conexao entre os links T e A */
+  Simulator::Schedule (Seconds (40), &TearDownLink, pcT, a, 1, 0);	
   
   /* Now, do the actual simulation. */
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Stop (Seconds (131.0));
-  AnimationInterface anim ("animation.xml");
+  AnimationInterface anim ("animation_top1.xml");
   Simulator::Run ();
   Simulator::Destroy ();
   NS_LOG_INFO ("Done.");
