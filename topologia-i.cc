@@ -6,10 +6,12 @@
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-routing-table-entry.h"
 #include "ns3/netanim-module.h"
+#include "ns3/applications-module.h"
 
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("Topologia1");
+Address serverAddress;
 
 //Metodo para derrubar links
 void TearDownLink (Ptr<Node> nodeA, Ptr<Node> nodeB, uint32_t interfaceA, uint32_t interfaceB)
@@ -68,6 +70,7 @@ int main (int argc, char **argv)
   Names::Add ("RouterB", b);
   Ptr<Node> c = CreateObject<Node> ();
   Names::Add ("RouterC", c);
+
   NodeContainer net1 (pcT, a);
   NodeContainer net2 (a, b);
   NodeContainer net3 (b, c);
@@ -111,6 +114,7 @@ int main (int argc, char **argv)
   
   ipv4.SetBase (Ipv4Address ("10.0.0.0"), Ipv4Mask ("255.255.255.0"));
   Ipv4InterfaceContainer iic1 = ipv4.Assign (ndc1);
+  serverAddress = Address(iic1.GetAddress (1));
 
   ipv4.SetBase (Ipv4Address ("10.0.1.0"), Ipv4Mask ("255.255.255.0"));
   Ipv4InterfaceContainer iic2 = ipv4.Assign (ndc2);
@@ -144,19 +148,41 @@ int main (int argc, char **argv)
     }
 	
   NS_LOG_INFO ("Create Applications.");
-  uint32_t packetSize = 1024;
-  Time interPacketInterval = Seconds (1.0);
-  V4PingHelper ping ("10.0.2.2");	
+//   uint32_t packetSize = 1024;
+//   Time interPacketInterval = Seconds (1.0);
+//   V4PingHelper ping ("10.0.2.2");	
   
-  ping.SetAttribute ("Interval", TimeValue (interPacketInterval));
-  ping.SetAttribute ("Size", UintegerValue (packetSize));
-  if (showPings)
-    {
-      ping.SetAttribute ("Verbose", BooleanValue (true));
-    }
-  ApplicationContainer apps = ping.Install (pcT);
-  apps.Start (Seconds (1.0));
+//   ping.SetAttribute ("Interval", TimeValue (interPacketInterval));
+//   ping.SetAttribute ("Size", UintegerValue (packetSize));
+//   if (showPings)
+//     {
+//       ping.SetAttribute ("Verbose", BooleanValue (true));
+//     }
+//   ApplicationContainer apps = ping.Install (pcT);
+//   apps.Start (Seconds (1.0));
+//   apps.Stop (Seconds (110.0));
+
+
+// Enable UDP nodeT -> nodeR
+// Create a UdpEchoServer application on node T
+  uint16_t port = 9;  // well-known echo port number
+  UdpEchoServerHelper server (port);
+  ApplicationContainer apps = server.Install (nodes.Get (1));
+  apps.Start (Seconds (2.0));
   apps.Stop (Seconds (110.0));
+
+// Create a UdpEchoClient application to send UDP datagrams from node T to node R
+  uint32_t packetSize = 1024;
+  uint32_t maxPacketCount = 1;
+  Time interPacketInterval = Seconds (1.);
+  UdpEchoClientHelper client (serverAddress, port);
+  client.SetAttribute ("MaxPackets", UintegerValue (maxPacketCount));
+  client.SetAttribute ("Interval", TimeValue (interPacketInterval));
+  client.SetAttribute ("PacketSize", UintegerValue (packetSize));
+  apps = client.Install (nodes.Get (0));
+  apps.Start (Seconds (2.0));
+  apps.Stop (Seconds (110.0));
+
 
   AsciiTraceHelper ascii;
   csma.EnableAsciiAll (ascii.CreateFileStream ("Topologia1.tr"));
