@@ -128,9 +128,9 @@ int main (int argc, char **argv)
   
   Ptr<Ipv4StaticRouting> staticRouting;
   staticRouting = Ipv4RoutingHelper::GetRouting <Ipv4StaticRouting> (pcT->GetObject<Ipv4> ()->GetRoutingProtocol ());
-  staticRouting->SetDefaultRoute ("10.0.0.2", 1 );
+  staticRouting->SetDefaultRoute ("10.0.1.1", 1 );
   staticRouting = Ipv4RoutingHelper::GetRouting <Ipv4StaticRouting> (pcR->GetObject<Ipv4> ()->GetRoutingProtocol ());
-  staticRouting->SetDefaultRoute ("10.0.2.1", 1 );
+  staticRouting->SetDefaultRoute ("10.0.3.1", 1 );
   
   if (printRoutingTables)
     {
