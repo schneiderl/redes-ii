@@ -94,7 +94,6 @@ int main (int argc, char **argv)
   // Interfaces are added sequentially, starting from 0
   // However, interface 0 is always the loopback...
   ripRouting.ExcludeInterface (a, 1);
-  ripRouting.ExcludeInterface (b, 2);
   ripRouting.ExcludeInterface (c, 3);
 
   Ipv4ListRoutingHelper listRH;
@@ -139,12 +138,15 @@ int main (int argc, char **argv)
 
       routingHelper.PrintRoutingTableAt (Seconds (30.0), a, routingStream);
       routingHelper.PrintRoutingTableAt (Seconds (30.0), b, routingStream);
+      routingHelper.PrintRoutingTableAt (Seconds (30.0), c, routingStream);
 
       routingHelper.PrintRoutingTableAt (Seconds (60.0), a, routingStream);
       routingHelper.PrintRoutingTableAt (Seconds (60.0), b, routingStream);
+      routingHelper.PrintRoutingTableAt (Seconds (60.0), c, routingStream);
 
       routingHelper.PrintRoutingTableAt (Seconds (90.0), a, routingStream);
       routingHelper.PrintRoutingTableAt (Seconds (90.0), b, routingStream);
+      routingHelper.PrintRoutingTableAt (Seconds (90.0), c, routingStream);	  
     }
 	
   NS_LOG_INFO ("Create Applications.");
@@ -164,25 +166,35 @@ int main (int argc, char **argv)
 
 
 // Enable UDP nodeT -> nodeR
-// Create a UdpEchoServer application on node T
+// Create a UdpEchoServer application on node T	
   uint16_t port = 9;  // well-known echo port number
   UdpEchoServerHelper server (port);
   ApplicationContainer apps = server.Install (nodes.Get (1));
-  apps.Start (Seconds (2.0));
+  apps.Start (Seconds (1.0));
   apps.Stop (Seconds (110.0));
 
 // Create a UdpEchoClient application to send UDP datagrams from node T to node R
   uint32_t packetSize = 1024;
   uint32_t maxPacketCount = 1;
-  Time interPacketInterval = Seconds (1.);
+  Time interPacketInterval = Seconds (1.0);
   UdpEchoClientHelper client (serverAddress, port);
   client.SetAttribute ("MaxPackets", UintegerValue (maxPacketCount));
   client.SetAttribute ("Interval", TimeValue (interPacketInterval));
   client.SetAttribute ("PacketSize", UintegerValue (packetSize));
   apps = client.Install (nodes.Get (0));
+
+  /* Gravando o ping de T*/
+  V4PingHelper ping ("10.0.0.2");	
+  ping.SetAttribute ("Interval", TimeValue (interPacketInterval));
+  ping.SetAttribute ("Size", UintegerValue (packetSize));
+  if (showPings)
+    {
+      ping.SetAttribute ("Verbose", BooleanValue (true));
+    }
+  apps = ping.Install (pcT);
+
   apps.Start (Seconds (2.0));
   apps.Stop (Seconds (110.0));
-
 
   AsciiTraceHelper ascii;
   csma.EnableAsciiAll (ascii.CreateFileStream ("Topologia1.tr"));
@@ -194,7 +206,14 @@ int main (int argc, char **argv)
   /* Now, do the actual simulation. */
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Stop (Seconds (131.0));
+  
   AnimationInterface anim ("animation_top1.xml");
+  anim.SetConstantPosition(pcT,50.0,0.0);
+  anim.SetConstantPosition(a,50.0,25.0);
+  anim.SetConstantPosition(b,50.0,50.0);
+  anim.SetConstantPosition(c,50.0,75.0);
+  anim.SetConstantPosition(pcR,50.0,100.0); 	
+	
   Simulator::Run ();
   Simulator::Destroy ();
   NS_LOG_INFO ("Done.");
