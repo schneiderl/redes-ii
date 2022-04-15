@@ -210,7 +210,7 @@ int main (int argc, char **argv)
 // Create a UdpEchoServer application on node T	
   uint16_t port = 9;  // well-known echo port number
   UdpEchoServerHelper server (port);
-  ApplicationContainer apps = server.Install (nodes.Get (1));
+  ApplicationContainer apps = server.Install (pcR);
   apps.Start (Seconds (1.0));
   apps.Stop (Seconds (110.0));
 
@@ -222,20 +222,20 @@ int main (int argc, char **argv)
   client.SetAttribute ("MaxPackets", UintegerValue (maxPacketCount));
   client.SetAttribute ("Interval", TimeValue (interPacketInterval));
   client.SetAttribute ("PacketSize", UintegerValue (packetSize));
-  apps = client.Install (nodes.Get (0));
+  apps = client.Install (pcT);
 
-  /* Gravando o ping de T*/
-  V4PingHelper ping ("10.0.0.2");	
-  ping.SetAttribute ("Interval", TimeValue (interPacketInterval));
-  ping.SetAttribute ("Size", UintegerValue (packetSize));
-  if (showPings)
-    {
-      ping.SetAttribute ("Verbose", BooleanValue (true));
-    }
-  apps = ping.Install (pcT);
+  // /* Gravando o ping de T*/
+  // V4PingHelper ping ("10.0.0.2");	
+  // ping.SetAttribute ("Interval", TimeValue (interPacketInterval));
+  // ping.SetAttribute ("Size", UintegerValue (packetSize));
+  // if (showPings)
+  //   {
+  //     ping.SetAttribute ("Verbose", BooleanValue (true));
+  //   }
+  // apps = ping.Install (pcT);
 
-  apps.Start (Seconds (2.0));
-  apps.Stop (Seconds (110.0));
+  // apps.Start (Seconds (2.0));
+  // apps.Stop (Seconds (110.0));
 
   AsciiTraceHelper ascii;
   csma.EnableAsciiAll (ascii.CreateFileStream ("Topologia1.tr"));
