@@ -7,6 +7,8 @@
 #include "ns3/ipv4-routing-table-entry.h"
 #include "ns3/netanim-module.h"
 #include "ns3/applications-module.h"
+#include "ns3/constant-position-mobility-model.h"
+#include "ns3/mobility-helper.h"
 
 using namespace ns3;
 
@@ -207,14 +209,36 @@ int main (int argc, char **argv)
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Stop (Seconds (131.0));
   
+
+  MobilityHelper mobility;
+  mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+  mobility.Install (nodes);
+  mobility.Install (routers);
+
+
   AnimationInterface anim ("animation_top1.xml");
-  anim.SetConstantPosition(pcT,50.0,0.0);
-  anim.SetConstantPosition(a,50.0,25.0);
-  anim.SetConstantPosition(b,50.0,50.0);
-  anim.SetConstantPosition(c,50.0,75.0);
-  anim.SetConstantPosition(pcR,50.0,100.0); 	
+
+  Ptr<ConstantPositionMobilityModel> s1 = pcT->GetObject<ConstantPositionMobilityModel> ();
+  Ptr<ConstantPositionMobilityModel> s2 = pcR->GetObject<ConstantPositionMobilityModel> ();
+  Ptr<ConstantPositionMobilityModel> s3 = a->GetObject<ConstantPositionMobilityModel> ();
+  Ptr<ConstantPositionMobilityModel> s4 = b->GetObject<ConstantPositionMobilityModel> ();
+  Ptr<ConstantPositionMobilityModel> s5 = c->GetObject<ConstantPositionMobilityModel> ();
+
+  s1->SetPosition (Vector ( 10.0,50,0.0  ));
+  s3->SetPosition (Vector ( 30.0,50.0,0.0  ));
+  s4->SetPosition (Vector ( 50.0,50.0,0.0  ));
+  s5->SetPosition (Vector ( 70.0,50.0,0.0  ));
+  s2->SetPosition (Vector ( 90.0,50.0,0.0  ));
+
+  anim.UpdateNodeDescription(pcT, "T");
+  anim.UpdateNodeDescription(pcR, "R");
+  anim.UpdateNodeDescription(a, "Router A");
+  anim.UpdateNodeDescription(b, "Router B");
+  anim.UpdateNodeDescription(c, "Router C");
 	
   Simulator::Run ();
   Simulator::Destroy ();
   NS_LOG_INFO ("Done.");
 }
+
+
