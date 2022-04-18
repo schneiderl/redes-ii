@@ -153,7 +153,7 @@ int main (int argc, char **argv)
   
   ipv4.SetBase (Ipv4Address ("10.0.0.0"), Ipv4Mask ("255.255.255.0"));
   Ipv4InterfaceContainer iic1 = ipv4.Assign (ndc1);
-  serverAddress = Address(iic1.GetAddress (1));
+ 
 
   ipv4.SetBase (Ipv4Address ("10.0.1.0"), Ipv4Mask ("255.255.255.0"));
   Ipv4InterfaceContainer iic2 = ipv4.Assign (ndc2);
@@ -178,6 +178,7 @@ int main (int argc, char **argv)
 
   ipv4.SetBase (Ipv4Address ("10.0.8.0"), Ipv4Mask ("255.255.255.0"));
   Ipv4InterfaceContainer iic9 = ipv4.Assign (ndc9);
+  serverAddress = Address(iic9.GetAddress (1));
 
   Ptr<Ipv4StaticRouting> staticRouting2;
   staticRouting2 = Ipv4RoutingHelper::GetRouting <Ipv4StaticRouting> (pcT->GetObject<Ipv4> ()->GetRoutingProtocol ());
@@ -211,7 +212,7 @@ int main (int argc, char **argv)
 
 // Create a UdpEchoClient application to send UDP datagrams from node T to node R
   uint32_t packetSize = 1024;
-  uint32_t maxPacketCount = 1;
+  uint32_t maxPacketCount = 5000;
   Time interPacketInterval = Seconds (1.0);
   UdpEchoClientHelper client (serverAddress, port);
   client.SetAttribute ("MaxPackets", UintegerValue (maxPacketCount));

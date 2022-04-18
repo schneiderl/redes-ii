@@ -118,7 +118,6 @@ int main (int argc, char **argv)
   
   ipv4.SetBase (Ipv4Address ("10.0.0.0"), Ipv4Mask ("255.255.255.0"));
   Ipv4InterfaceContainer iic1 = ipv4.Assign (ndc1);
-  serverAddress = Address(iic1.GetAddress (1));
 
   ipv4.SetBase (Ipv4Address ("10.0.1.0"), Ipv4Mask ("255.255.255.0"));
   Ipv4InterfaceContainer iic2 = ipv4.Assign (ndc2);
@@ -128,6 +127,7 @@ int main (int argc, char **argv)
 
   ipv4.SetBase (Ipv4Address ("10.0.3.0"), Ipv4Mask ("255.255.255.0"));
   Ipv4InterfaceContainer iic4 = ipv4.Assign (ndc4);
+  serverAddress = Address(iic4.GetAddress (1));
   
   Ptr<Ipv4StaticRouting> staticRouting2;
   staticRouting2 = Ipv4RoutingHelper::GetRouting <Ipv4StaticRouting> (pcT->GetObject<Ipv4> ()->GetRoutingProtocol ());

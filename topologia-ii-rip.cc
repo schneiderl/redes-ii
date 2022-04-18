@@ -39,7 +39,7 @@ int main (int argc, char **argv)
   if (verbose)
     {
       LogComponentEnableAll (LogLevel (LOG_PREFIX_TIME | LOG_PREFIX_NODE));
-      LogComponentEnable ("Topologia1", LOG_LEVEL_INFO);
+      LogComponentEnable ("Topologia2", LOG_LEVEL_INFO);
       LogComponentEnable ("Rip", LOG_LEVEL_ALL);
       LogComponentEnable ("Ipv4Interface", LOG_LEVEL_ALL);
       LogComponentEnable ("Icmpv4L4Protocol", LOG_LEVEL_ALL);
@@ -117,7 +117,7 @@ int main (int argc, char **argv)
   // Interfaces are added sequentially, starting from 0
   // However, interface 0 is always the loopback...
   ripRouting.ExcludeInterface (a, 1);
-  ripRouting.ExcludeInterface (c, 3);
+  ripRouting.ExcludeInterface (d, 4);
 
   Ipv4ListRoutingHelper listRH;
   listRH.Add (ripRouting, 0);
@@ -161,6 +161,7 @@ int main (int argc, char **argv)
 
   ipv4.SetBase (Ipv4Address ("10.0.8.0"), Ipv4Mask ("255.255.255.0"));
   Ipv4InterfaceContainer iic9 = ipv4.Assign (ndc9);
+  serverAddress = Address(iic9.GetAddress (1));
 
   Ptr<Ipv4StaticRouting> staticRouting;
   staticRouting = Ipv4RoutingHelper::GetRouting <Ipv4StaticRouting> (pcT->GetObject<Ipv4> ()->GetRoutingProtocol ());
@@ -216,7 +217,7 @@ int main (int argc, char **argv)
 
 // Create a UdpEchoClient application to send UDP datagrams from node T to node R
   uint32_t packetSize = 1024;
-  uint32_t maxPacketCount = 1;
+  uint32_t maxPacketCount = 1000;
   Time interPacketInterval = Seconds (1.0);
   UdpEchoClientHelper client (serverAddress, port);
   client.SetAttribute ("MaxPackets", UintegerValue (maxPacketCount));
@@ -234,12 +235,12 @@ int main (int argc, char **argv)
   //   }
   // apps = ping.Install (pcT);
 
-  // apps.Start (Seconds (2.0));
-  // apps.Stop (Seconds (110.0));
+  apps.Start (Seconds (1.0));
+  apps.Stop (Seconds (110.0));
 
   AsciiTraceHelper ascii;
-  csma.EnableAsciiAll (ascii.CreateFileStream ("Topologia1.tr"));
-  csma.EnablePcapAll ("Topologia1", true);
+  csma.EnableAsciiAll (ascii.CreateFileStream ("Topologia2-rip.tr"));
+  csma.EnablePcapAll ("Topologia2-rip", true);
 	
   /* Derrubando a conexao entre os links T e A */
   Simulator::Schedule (Seconds (40), &TearDownLink, b, d, 1, 0);	

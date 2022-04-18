@@ -44,7 +44,7 @@ int main (int argc, char **argv)
   if (verbose)
     {
       LogComponentEnableAll (LogLevel (LOG_PREFIX_TIME | LOG_PREFIX_NODE));
-      LogComponentEnable ("Exemplo-RIp", LOG_LEVEL_INFO);
+      LogComponentEnable ("topologia-i-rip", LOG_LEVEL_INFO);
       LogComponentEnable ("Rip", LOG_LEVEL_ALL);
       LogComponentEnable ("Ipv4Interface", LOG_LEVEL_ALL);
       LogComponentEnable ("Icmpv4L4Protocol", LOG_LEVEL_ALL);
@@ -129,7 +129,7 @@ int main (int argc, char **argv)
 
   ipv4.SetBase (Ipv4Address ("10.0.3.0"), Ipv4Mask ("255.255.255.0"));
   Ipv4InterfaceContainer iic4 = ipv4.Assign (ndc4);
-
+  serverAddress = Address(iic4.GetAddress (1));
   
   Ptr<Ipv4StaticRouting> staticRouting;
   staticRouting = Ipv4RoutingHelper::GetRouting <Ipv4StaticRouting> (src->GetObject<Ipv4> ()->GetRoutingProtocol ());
@@ -137,8 +137,6 @@ int main (int argc, char **argv)
   staticRouting = Ipv4RoutingHelper::GetRouting <Ipv4StaticRouting> (dst->GetObject<Ipv4> ()->GetRoutingProtocol ());
   staticRouting->SetDefaultRoute ("10.0.3.1", 1 );
   
-  if (printRoutingTables)
-    {
       RipHelper routingHelper;
 
       Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> (&std::cout);
@@ -154,7 +152,6 @@ int main (int argc, char **argv)
       routingHelper.PrintRoutingTableAt (Seconds (90.0), a, routingStream);
       routingHelper.PrintRoutingTableAt (Seconds (90.0), b, routingStream);
       routingHelper.PrintRoutingTableAt (Seconds (90.0), c, routingStream);
-    }
 	
   NS_LOG_INFO ("Create Applications.");
   // uint32_t packetSize = 1024;
@@ -172,14 +169,14 @@ int main (int argc, char **argv)
 
 // Enable UDP nodeT -> nodeR
 // Create a UdpEchoServer application on node T	
-  NS_LOG_INFO ("Create UdpServer application on node 1.");
+  NS_LOG_INFO ("Create UdpServer application on node R.");
   uint16_t port = 4000;
   UdpServerHelper server (port);
   ApplicationContainer apps = server.Install (dst);
   apps.Start (Seconds (1.0));
   apps.Stop (Seconds (110.0));
  
-  NS_LOG_INFO ("Create UdpClient application on node 0 to send to node 1.");
+  NS_LOG_INFO ("Create UdpClient application on node 0 to send to node T.");
   uint32_t MaxPacketSize = 1024;
   Time interPacketInterval = Seconds (1);
   uint32_t maxPacketCount = 1000;
@@ -188,14 +185,26 @@ int main (int argc, char **argv)
   client.SetAttribute ("Interval", TimeValue (interPacketInterval));
   client.SetAttribute ("PacketSize", UintegerValue (MaxPacketSize));
   apps = client.Install (src);
+
+// Gravando o ping de T
+  V4PingHelper ping ("10.0.3.2");	
+  ping.SetAttribute ("Interval", TimeValue (interPacketInterval));
+  ping.SetAttribute ("Size", UintegerValue (MaxPacketSize));
+  if (showPings)
+    {
+      ping.SetAttribute ("Verbose", BooleanValue (true));
+    }
+  apps = ping.Install (src);
+
+
   apps.Start (Seconds (1.0));
   apps.Stop (Seconds (110.0));
 
   AsciiTraceHelper ascii;
-  csma.EnableAsciiAll (ascii.CreateFileStream ("Topologia1-Rip.tr"));
-  csma.EnablePcapAll ("Topologia1-Rip", true);
+  csma.EnableAsciiAll (ascii.CreateFileStream ("topologia-i-rip.tr"));
+  csma.EnablePcapAll ("topologia-i-rip", true);
 
-  Simulator::Schedule (Seconds (20), &TearDownLink, src, a, 1, 0);	
+  Simulator::Schedule (Seconds (40), &TearDownLink, src, a, 1, 0);	
 
 
   MobilityHelper mobility;
@@ -204,7 +213,7 @@ int main (int argc, char **argv)
   mobility.Install (routers);
 
 
-  AnimationInterface anim ("animation_top1-rip.xml");
+  AnimationInterface anim ("animation_top1.xml");
 
   Ptr<ConstantPositionMobilityModel> s1 = src->GetObject<ConstantPositionMobilityModel> ();
   Ptr<ConstantPositionMobilityModel> s2 = dst->GetObject<ConstantPositionMobilityModel> ();
